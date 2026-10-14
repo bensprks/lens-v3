@@ -84,6 +84,17 @@ Run the following command, which deploys the full protocol with all present Rule
 yarn run deploy
 ```
 
+### Monad
+
+The protocol also runs on [Monad](https://docs.monad.xyz). To run the tests with Monad's EVM semantics (Foundry >= 1.8.0):
+
+```
+forge test --network monad
+```
+
+See [MONAD.md](./MONAD.md) for the changes made to support Monad, how Monad's behaviour affects the protocol, and how to
+deploy it there.
+
 ## Lens Core Structure
 
 The concept of Lens V3 is based on the following assumptions:
