@@ -19,6 +19,7 @@ evm_version = 'paris'
 # - [5574] Size limit:
 #   zkSync's zkEVM has a bigger size limit than classic EVM, and we sometimes use classic foundry for quicker
 #   compilation during development. Also, tests will trigger this warning otherwise too.
+#   Monad allows 128 KB contracts (MIP-2), check them with `FOUNDRY_NETWORK=monad forge build --sizes`.
 ignored_error_codes = [5740, 5574] 
 # Ignore warnings from dependencies.
 ignored_warnings_from = ["lib/", "node_modules/"]
@@ -56,3 +57,11 @@ codegen = 'yul'
 
 [fmt]
 line_length = 121
+
+[lint]
+# Recent Foundry versions lint after every build, which `deny_warnings` turns into errors. Run `forge lint` instead.
+lint_on_build = false
+
+[rpc_endpoints]
+monad = "https://rpc.monad.xyz"
+monad_testnet = "https://testnet-rpc.monad.xyz"
