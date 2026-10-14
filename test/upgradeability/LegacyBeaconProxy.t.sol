@@ -172,7 +172,7 @@ contract LegacyBeaconProxyTest is ZkTest {
     }
 
     function test_SetBeacon_AutoUpgradeEnabled(address newBeacon, address newImpl) public {
-        vm.assume(newBeacon != address(vm));
+        assumeNotCheatcodeAddress(newBeacon);
 
         assertEq(proxy.proxy__getBeacon(), address(beacon));
         assertEq(proxy.proxy__getImplementation(), DEFAULT_IMPL);
@@ -186,7 +186,7 @@ contract LegacyBeaconProxyTest is ZkTest {
     }
 
     function test_SetBeacon_AutoUpgradeDisabled(address newBeacon, address newImpl) public {
-        vm.assume(newBeacon != address(vm));
+        assumeNotCheatcodeAddress(newBeacon);
 
         proxy.proxy__optOutFromAutoUpgrade();
         assertEq(proxy.proxy__getBeacon(), address(beacon));

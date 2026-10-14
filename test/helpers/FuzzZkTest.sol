@@ -16,7 +16,7 @@ contract FuzzZkTest is ZkTest {
     }
 
     function _assumeEOA(address someAddress) internal view {
-        assumeNotForgeAddress(someAddress);
+        assumeNotCheatcodeAddress(someAddress);
         vm.assume(someAddress.code.length == 0);
         vm.assume(uint160(someAddress) > type(uint16).max); // skip system contracts
     }
