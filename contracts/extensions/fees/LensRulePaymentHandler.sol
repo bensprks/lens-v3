@@ -3,7 +3,7 @@ pragma solidity ^0.8.26;
 
 import {LensPaymentHandler} from "contracts/extensions/fees/LensPaymentHandler.sol";
 import {ILensNativePaymentHelper} from "contracts/extensions/fees/LensNativePaymentHelper.sol";
-import {LENS_CREATE_2_ADDRESS, ILensCreate2} from "contracts/core/upgradeability/LensCreate2.sol";
+import {lensCreate2Address, ILensCreate2} from "contracts/core/upgradeability/LensCreate2.sol";
 import {CONTRACT__LENS_NATIVE_PAYMENT_HELPER, NATIVE_TOKEN} from "contracts/core/types/Constants.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -15,7 +15,7 @@ abstract contract LensRulePaymentHandler is LensPaymentHandler {
 
     constructor() {
         LENS_NATIVE_PAYMENT_HELPER = ILensNativePaymentHelper(
-            ILensCreate2(LENS_CREATE_2_ADDRESS).getAddress(CONTRACT__LENS_NATIVE_PAYMENT_HELPER)
+            ILensCreate2(lensCreate2Address()).getAddress(CONTRACT__LENS_NATIVE_PAYMENT_HELPER)
         );
     }
 

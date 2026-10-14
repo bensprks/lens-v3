@@ -2,7 +2,7 @@
 pragma solidity ^0.8.26;
 
 import {Errors} from "contracts/core/types/Errors.sol";
-import {LENS_CREATE_2_ADDRESS, ILensCreate2} from "contracts/core/upgradeability/LensCreate2.sol";
+import {lensCreate2Address, ILensCreate2} from "contracts/core/upgradeability/LensCreate2.sol";
 import {CONTRACT__LENS_NATIVE_PAYMENT_HELPER} from "contracts/core/types/Constants.sol";
 
 interface ILensNativePaymentHelper {
@@ -44,7 +44,7 @@ abstract contract PayableUsingNativePaymentHelper {
 
     constructor() {
         LENS_NATIVE_PAYMENT_HELPER = ILensNativePaymentHelper(
-            ILensCreate2(LENS_CREATE_2_ADDRESS).getAddress(CONTRACT__LENS_NATIVE_PAYMENT_HELPER)
+            ILensCreate2(lensCreate2Address()).getAddress(CONTRACT__LENS_NATIVE_PAYMENT_HELPER)
         );
     }
 
