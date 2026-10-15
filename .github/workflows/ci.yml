@@ -62,7 +62,8 @@ jobs:
         run: forge --version
       - name: Install Dependencies
         run: yarn
+      # The `monad` profile implies `--network monad` and uses the compiler settings of Monad deployments.
       - name: Check Contract Sizes - Monad Limits
-        run: FOUNDRY_NETWORK=monad forge build --sizes
+        run: FOUNDRY_PROFILE=monad forge build --sizes
       - name: Run Tests - Monad Environment
-        run: forge test --network monad -vvv
+        run: FOUNDRY_PROFILE=monad forge test -vvv
