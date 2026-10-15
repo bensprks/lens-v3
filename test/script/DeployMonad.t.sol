@@ -6,7 +6,7 @@ import "../helpers/TypeHelpers.sol";
 import {DeployMonad} from "script/DeployMonad.s.sol";
 import {ZkTest} from "test/helpers/ZkTest.sol";
 import {LENS_CREATE_2_EVM_ADDRESS, LensCreate2, lensCreate2Address} from "@core/upgradeability/LensCreate2.sol";
-import {CONTRACT__LENS_NATIVE_PAYMENT_HELPER, NATIVE_TOKEN} from "@core/types/Constants.sol";
+import {BPS_MAX, CONTRACT__LENS_NATIVE_PAYMENT_HELPER, NATIVE_TOKEN} from "@core/types/Constants.sol";
 import {IFeed, CreatePostParams} from "@core/interfaces/IFeed.sol";
 import {IGraph} from "@core/interfaces/IGraph.sol";
 import {IAccount} from "@extensions/account/IAccount.sol";
@@ -136,5 +136,87 @@ contract DeployMonadTest is ZkTest {
 
     function _lensCreate2Address(string memory name) internal view returns (address) {
         return lensCreate2.getAddress(keccak256(bytes(string.concat("lens.contract.", name))));
+    }
+}
+
+contract DeployMonadHarness is DeployMonad {
+    constructor(address deployer_) {
+        deployer = deployer_;
+    }
+
+    function validateConfig(Config memory configToValidate) external view {
+        _validateConfig(configToValidate);
+    }
+}
+
+contract DeployMonadConfigTest is ZkTest {
+    DeployMonadHarness harness;
+
+    function setUp() public onlyEvm {
+        harness = new DeployMonadHarness(makeAddr("DEPLOYER"));
+    }
+
+    function test_AcceptsValidConfig() public {
+        harness.validateConfig(_validConfig());
+    }
+
+    function test_AcceptsZeroTreasury_IfNotChargingFee() public {
+        DeployMonad.Config memory config = _validConfig();
+        config.treasury = address(0);
+        config.treasuryFeeBps = 0;
+        harness.validateConfig(config);
+    }
+
+    function test_CannotUseTreasuryFee_AboveBpsMax(uint256 treasuryFeeBps) public {
+        DeployMonad.Config memory config = _validConfig();
+        config.treasuryFeeBps = bound(treasuryFeeBps, BPS_MAX + 1, type(uint256).max);
+        vm.expectRevert(bytes("TREASURY_FEE_BPS cannot exceed 10000"));
+        harness.validateConfig(config);
+    }
+
+    function test_CannotUseZeroTreasury_IfChargingFee(uint256 treasuryFeeBps) public {
+        DeployMonad.Config memory config = _validConfig();
+        config.treasury = address(0);
+        config.treasuryFeeBps = bound(treasuryFeeBps, 1, BPS_MAX);
+        vm.expectRevert(bytes("TREASURY_ADDRESS cannot be zero when charging a fee"));
+        harness.validateConfig(config);
+    }
+
+    function test_CannotUseZeroOwner(uint256 ownerIndex) public {
+        DeployMonad.Config memory config = _validConfig();
+        string memory envVar;
+        ownerIndex = bound(ownerIndex, 0, 5);
+        if (ownerIndex == 0) {
+            (config.proxyAdminLockOwner, envVar) = (address(0), "PROXY_ADMIN_LOCK_OWNER");
+        } else if (ownerIndex == 1) {
+            (config.accessControlLockOwner, envVar) = (address(0), "ACCESS_CONTROL_LOCK_OWNER");
+        } else if (ownerIndex == 2) {
+            (config.beaconOwner, envVar) = (address(0), "BEACON_OWNER");
+        } else if (ownerIndex == 3) {
+            (config.rulesOwner, envVar) = (address(0), "RULES_OWNER");
+        } else if (ownerIndex == 4) {
+            (config.actionsOwner, envVar) = (address(0), "ACTIONS_OWNER");
+        } else {
+            (config.primitivesOwner, envVar) = (address(0), "PRIMITIVES_OWNER");
+        }
+        vm.expectRevert(bytes(string.concat(envVar, " cannot be the zero address")));
+        harness.validateConfig(config);
+    }
+
+    function _validConfig() internal returns (DeployMonad.Config memory) {
+        return DeployMonad.Config({
+            lensCreate2ProxyAdmin: makeAddr("LENS_CREATE_2_PROXY_ADMIN"),
+            proxyAdminLockOwner: makeAddr("PROXY_ADMIN_LOCK_OWNER"),
+            accessControlLockOwner: makeAddr("ACCESS_CONTROL_LOCK_OWNER"),
+            beaconOwner: makeAddr("BEACON_OWNER"),
+            factoriesProxyOwner: makeAddr("FACTORIES_PROXY_OWNER"),
+            rulesProxyOwner: makeAddr("RULES_PROXY_OWNER"),
+            rulesOwner: makeAddr("RULES_OWNER"),
+            actionsOwner: makeAddr("ACTIONS_OWNER"),
+            primitivesOwner: makeAddr("PRIMITIVES_OWNER"),
+            treasury: makeAddr("TREASURY"),
+            treasuryFeeBps: 150,
+            wrappedNativeToken: makeAddr("WMON")
+        });
     }
 }
