@@ -55,6 +55,16 @@ optimizer_mode = '1'
 # optimizer_details = { ... }
 codegen = 'yul'
 
+# Monad: run with `FOUNDRY_PROFILE=monad` (implies `--network monad`). Unlike ZKsync deployments, compiled by zksolc
+# with its own optimizer, Monad deployments run solc's bytecode, so it is optimized and targets cancun (PUSH0, MCOPY).
+[profile.monad]
+network = "monad"
+optimizer = true
+optimizer_runs = 200
+evm_version = 'cancun'
+# - [3860] Initcode size above 49152 bytes (Shanghai): only scripts and test helpers, and Monad allows 256 KB (MIP-2).
+ignored_error_codes = [5740, 5574, 3860]
+
 [fmt]
 line_length = 121
 
