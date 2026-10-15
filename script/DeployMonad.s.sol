@@ -6,7 +6,7 @@ import {console} from "forge-std/console.sol";
 
 import {TransparentUpgradeableProxy} from "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 
-import {NATIVE_TOKEN} from "contracts/core/types/Constants.sol";
+import {NATIVE_TOKEN, BPS_MAX} from "contracts/core/types/Constants.sol";
 import {RuleChange, KeyValue} from "contracts/core/types/Types.sol";
 import {Beacon} from "contracts/core/upgradeability/Beacon.sol";
 import {Lock} from "contracts/core/upgradeability/Lock.sol";
@@ -105,7 +105,7 @@ contract DeployMonad is Script {
         address actionsOwner;
         address primitivesOwner;
         address treasury;
-        uint16 treasuryFeeBps;
+        uint256 treasuryFeeBps;
         address wrappedNativeToken;
     }
 
@@ -168,14 +168,35 @@ contract DeployMonad is Script {
             actionsOwner: _envAddress("ACTIONS_OWNER", deployer, isLocal),
             primitivesOwner: _envAddress("PRIMITIVES_OWNER", deployer, isLocal),
             treasury: _envAddress("TREASURY_ADDRESS", deployer, isLocal),
-            treasuryFeeBps: uint16(isLocal ? vm.envOr("TREASURY_FEE_BPS", uint256(0)) : vm.envUint("TREASURY_FEE_BPS")),
+            treasuryFeeBps: isLocal ? vm.envOr("TREASURY_FEE_BPS", uint256(0)) : vm.envUint("TREASURY_FEE_BPS"),
             wrappedNativeToken: vm.envOr("WRAPPED_NATIVE_TOKEN", address(0))
         });
         if (config.wrappedNativeToken == address(0)) {
             config.wrappedNativeToken = _defaultWrappedNativeToken();
         }
-        require(config.lensCreate2ProxyAdmin != deployer, "LENS_CREATE_2_PROXY_ADMIN cannot be the deployer");
-        require(config.factoriesProxyOwner != deployer, "FACTORIES_PROXY_OWNER cannot be the deployer");
+        _validateConfig(config);
+    }
+
+    function _validateConfig(Config memory configToValidate) internal view {
+        require(configToValidate.lensCreate2ProxyAdmin != deployer, "LENS_CREATE_2_PROXY_ADMIN cannot be the deployer");
+        require(configToValidate.factoriesProxyOwner != deployer, "FACTORIES_PROXY_OWNER cannot be the deployer");
+        // Ownable allows a zero owner, which would leave the locks, beacons, rules, actions or primitives unmanageable.
+        _requireNonZero(configToValidate.proxyAdminLockOwner, "PROXY_ADMIN_LOCK_OWNER");
+        _requireNonZero(configToValidate.accessControlLockOwner, "ACCESS_CONTROL_LOCK_OWNER");
+        _requireNonZero(configToValidate.beaconOwner, "BEACON_OWNER");
+        _requireNonZero(configToValidate.rulesOwner, "RULES_OWNER");
+        _requireNonZero(configToValidate.actionsOwner, "ACTIONS_OWNER");
+        _requireNonZero(configToValidate.primitivesOwner, "PRIMITIVES_OWNER");
+        // Checked before narrowing it to LensFees' uint16. Payments deduct the fee even if the treasury is zero.
+        require(configToValidate.treasuryFeeBps <= BPS_MAX, "TREASURY_FEE_BPS cannot exceed 10000");
+        require(
+            configToValidate.treasuryFeeBps == 0 || configToValidate.treasury != address(0),
+            "TREASURY_ADDRESS cannot be zero when charging a fee"
+        );
+    }
+
+    function _requireNonZero(address account, string memory name) internal pure {
+        require(account != address(0), string.concat(name, " cannot be the zero address"));
     }
 
     function _envAddress(string memory name, address localDefault, bool isLocal) internal view returns (address) {
@@ -223,7 +244,9 @@ contract DeployMonad is Script {
     }
 
     function _deployFeesAndActionHub() internal {
-        _create2("LensFees", address(new LensFees(config.treasury, config.treasuryFeeBps)), config.factoriesProxyOwner);
+        _create2(
+            "LensFees", address(new LensFees(config.treasury, uint16(config.treasuryFeeBps))), config.factoriesProxyOwner
+        );
         _create2("LensNativePaymentHelper", address(new LensNativePaymentHelper()), config.factoriesProxyOwner);
         actionHub = _create2("ActionHub", address(new ActionHub()), config.factoriesProxyOwner);
     }
