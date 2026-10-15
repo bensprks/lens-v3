@@ -37,7 +37,7 @@ contract SimpleCollectActionTest is Test, BaseDeployments {
         vm.assume(recipient != address(TREASURY_ADDRESS));
         vm.assume(recipient.code.length == 0);
         vm.assume(uint160(recipient) > type(uint16).max); // skip system contracts
-        assumeNotForgeAddress(recipient);
+        assumeNotCheatcodeAddress(recipient);
 
         amount = amount % (1 << 95);
         vm.assume(amount > 0);
@@ -61,13 +61,13 @@ contract SimpleCollectActionTest is Test, BaseDeployments {
         vm.assume(recipient != address(TREASURY_ADDRESS));
         vm.assume(recipient.code.length == 0);
         vm.assume(uint160(recipient) > type(uint16).max); // skip system contracts
-        assumeNotForgeAddress(recipient);
+        assumeNotCheatcodeAddress(recipient);
 
         vm.assume(collector != address(0));
         vm.assume(collector != address(TREASURY_ADDRESS));
         vm.assume(collector.code.length == 0);
         vm.assume(uint160(collector) > type(uint16).max); // skip system contracts
-        assumeNotForgeAddress(collector);
+        assumeNotCheatcodeAddress(collector);
 
         vm.assume(collector != recipient); // We can test this case separately
 

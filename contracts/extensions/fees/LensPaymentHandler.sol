@@ -6,7 +6,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {CONTRACT__LENS_FEES, NATIVE_TOKEN, BPS_MAX} from "contracts/core/types/Constants.sol";
 import {RecipientData} from "contracts/core/types/Types.sol";
-import {LENS_CREATE_2_ADDRESS, ILensCreate2} from "contracts/core/upgradeability/LensCreate2.sol";
+import {lensCreate2Address, ILensCreate2} from "contracts/core/upgradeability/LensCreate2.sol";
 import {Errors} from "contracts/core/types/Errors.sol";
 
 abstract contract LensPaymentHandler {
@@ -15,7 +15,7 @@ abstract contract LensPaymentHandler {
     address immutable LENS_FEES;
 
     constructor() {
-        LENS_FEES = ILensCreate2(LENS_CREATE_2_ADDRESS).getAddress(CONTRACT__LENS_FEES);
+        LENS_FEES = ILensCreate2(lensCreate2Address()).getAddress(CONTRACT__LENS_FEES);
     }
 
     function _handlePayment(

@@ -5,6 +5,7 @@ import "forge-std/Test.sol";
 import {BeaconProxy} from "@core/upgradeability/BeaconProxy.sol";
 import {MockVersionedBeacon} from "test/mocks/MockVersionedBeacon.sol";
 import {Errors} from "@core/types/Errors.sol";
+import {ZkTest} from "test/helpers/ZkTest.sol";
 
 contract Impl {
     address immutable IMPL_ADDRESS;
@@ -49,7 +50,7 @@ contract Impl {
     }
 }
 
-contract BeaconProxyTest is Test {
+contract BeaconProxyTest is ZkTest {
     MockVersionedBeacon beacon;
     BeaconProxy proxy;
 
@@ -173,7 +174,7 @@ contract BeaconProxyTest is Test {
     }
 
     function test_SetBeacon_AutoUpgradeEnabled(address newBeacon, address newImpl) public {
-        vm.assume(newBeacon != address(vm));
+        assumeNotCheatcodeAddress(newBeacon);
 
         assertEq(proxy.proxy__getBeacon(), address(beacon));
         assertEq(proxy.proxy__getImplementation(), DEFAULT_IMPL);
@@ -188,7 +189,7 @@ contract BeaconProxyTest is Test {
     }
 
     function test_SetBeacon_AutoUpgradeDisabled(address newBeacon, address newImpl) public {
-        vm.assume(newBeacon != address(vm));
+        assumeNotCheatcodeAddress(newBeacon);
 
         proxy.proxy__optOutFromAutoUpgrade();
         assertEq(proxy.proxy__getBeacon(), address(beacon));

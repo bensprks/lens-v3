@@ -161,7 +161,7 @@ contract GroupTest is RulesTest, BaseDeployments, RuleExecutionTest {
 
     // TODO: Add this to GroupHelpers or something
     function _forceMemberIntoGroup(address member) internal {
-        assumeNotForgeAddress(member); // skip vm contract
+        assumeNotCheatcodeAddress(member); // skip vm contract
         if (group.isMember(member) == false) {
             vm.mockCall(
                 member,
@@ -238,7 +238,7 @@ contract GroupTest is RulesTest, BaseDeployments, RuleExecutionTest {
 
     function test_AddMember_LensFactoryConfiguration_MsgSenderIsOwner(address newMember) public {
         vm.assume(newMember != address(0));
-        assumeNotForgeAddress(newMember);
+        assumeNotCheatcodeAddress(newMember);
 
         vm.assume(factoryDeployedGroup.isMember(newMember) == false);
 
@@ -274,12 +274,12 @@ contract GroupTest is RulesTest, BaseDeployments, RuleExecutionTest {
         public
     {
         vm.assume(newMember != address(0));
-        vm.assume(newMember != address(vm));
+        assumeNotCheatcodeAddress(newMember);
 
         vm.assume(
-            AccessControlled(address(factoryDeployedGroup)).getAccessControl().hasAccess(
-                msgSender, address(factoryDeployedGroup), PID__ADD_MEMBER
-            ) == false
+            AccessControlled(address(factoryDeployedGroup))
+                .getAccessControl()
+                .hasAccess(msgSender, address(factoryDeployedGroup), PID__ADD_MEMBER) == false
         );
 
         vm.assume(factoryDeployedGroup.isMember(newMember) == false);
@@ -308,7 +308,7 @@ contract GroupTest is RulesTest, BaseDeployments, RuleExecutionTest {
 
     function test_AddMember_PermissionlessIfNoProcessAdditionRules(address msgSender, address newMember) public {
         vm.assume(newMember != address(0));
-        assumeNotForgeAddress(newMember);
+        assumeNotCheatcodeAddress(newMember);
 
         mockAccessControl.mockAccess(groupOwner, address(group), PID__CHANGE_RULES, true);
         _disableAllRulesFromGroupSelector(address(group), IGroupRule.processAddition.selector, groupOwner);
@@ -348,7 +348,7 @@ contract GroupTest is RulesTest, BaseDeployments, RuleExecutionTest {
 
     function test_RemoveMember_PermissionlessIfNoProcessRemovalRules(address msgSender, address memberToRemove) public {
         vm.assume(memberToRemove != address(0));
-        vm.assume(memberToRemove != address(vm));
+        assumeNotCheatcodeAddress(memberToRemove);
 
         _forceMemberIntoGroup(memberToRemove);
         vm.assume(group.isMember(memberToRemove) == true);
@@ -577,7 +577,7 @@ contract GroupTest2 is RulesTest, BaseDeployments, RuleExecutionTest {
 
     // TODO: Add this to GroupHelpers or something
     function _forceMemberIntoGroup(address member) internal {
-        assumeNotForgeAddress(member); // skip vm contract
+        assumeNotCheatcodeAddress(member); // skip vm contract
         if (group.isMember(member) == false) {
             vm.mockCall(
                 member,
@@ -662,9 +662,7 @@ contract GroupTest2 is RulesTest, BaseDeployments, RuleExecutionTest {
         vm.prank(groupOwner);
         vm.expectRevert(Errors.RedundantStateChange.selector);
         group.addMember({
-            account: member,
-            customParams: _emptyKeyValueArray(),
-            ruleProcessingParams: _emptyRuleProcessingParamsArray()
+            account: member, customParams: _emptyKeyValueArray(), ruleProcessingParams: _emptyRuleProcessingParamsArray()
         });
     }
 
@@ -678,9 +676,7 @@ contract GroupTest2 is RulesTest, BaseDeployments, RuleExecutionTest {
         vm.prank(member);
         vm.expectRevert(Errors.RedundantStateChange.selector);
         group.joinGroup({
-            account: member,
-            customParams: _emptyKeyValueArray(),
-            ruleProcessingParams: _emptyRuleProcessingParamsArray()
+            account: member, customParams: _emptyKeyValueArray(), ruleProcessingParams: _emptyRuleProcessingParamsArray()
         });
     }
 
@@ -875,9 +871,7 @@ contract GroupTest2 is RulesTest, BaseDeployments, RuleExecutionTest {
 
         vm.prank(member);
         group.joinGroup({
-            account: member,
-            customParams: _emptyKeyValueArray(),
-            ruleProcessingParams: _emptyRuleProcessingParamsArray()
+            account: member, customParams: _emptyKeyValueArray(), ruleProcessingParams: _emptyRuleProcessingParamsArray()
         });
 
         uint256 memberCountAfter = group.getNumberOfMembers();

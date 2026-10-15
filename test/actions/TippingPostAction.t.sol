@@ -26,7 +26,7 @@ contract TippingAccountActionTest is Test, BaseDeployments {
         vm.assume(account != address(TREASURY_ADDRESS));
         vm.assume(account.code.length == 0);
         vm.assume(uint160(account) > type(uint16).max); // skip system contracts
-        assumeNotForgeAddress(account);
+        assumeNotCheatcodeAddress(account);
 
         msgValue = msgValue % (1 << 95);
         vm.assume(msgValue > 0);

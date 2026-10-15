@@ -57,6 +57,7 @@ contract TokenDistributorTest is FuzzZkTest {
     ) public {
         vm.assume(constructorOwner != initializerOwner);
         vm.assume(proxyAdmin != address(this));
+        vm.assume(proxyAdmin != address(0));
         address impl = address(new TokenDistributor(constructorOwner));
 
         bytes memory initializeCall = abi.encodeCall(TokenDistributor.initialize, (initializerOwner));
@@ -390,6 +391,7 @@ contract TokenDistributorTest is FuzzZkTest {
 
     function testCannot_createDistribution_ifNotOwner_withERC20(address nonOwner, uint256 amount) public {
         vm.assume(nonOwner != owner);
+        vm.assume(nonOwner != address(0));
         amount = _boundAmount(amount);
         mockCurrency.mint(nonOwner, amount);
         vm.prank(nonOwner);
