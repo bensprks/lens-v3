@@ -86,10 +86,11 @@ yarn run deploy
 
 ### Monad
 
-The protocol also runs on [Monad](https://docs.monad.xyz). To run the tests with Monad's EVM semantics (Foundry >= 1.8.0):
+The protocol also runs on [Monad](https://docs.monad.xyz). To run the tests with Monad's EVM semantics and the compiler
+settings used for Monad deployments (Foundry >= 1.8.0), use the `monad` profile, which implies `--network monad`:
 
 ```
-forge test --network monad
+FOUNDRY_PROFILE=monad forge test
 ```
 
 See [MONAD.md](./MONAD.md) for the changes made to support Monad, how Monad's behaviour affects the protocol, and how to

@@ -68,13 +68,16 @@ import {MockWrapperCurrency} from "test/mocks/MockWrapperCurrency.sol";
 /**
  * @notice Deploys the whole Lens protocol on Monad (or any other EVM chain), with MON as the native token.
  *
+ * Always run it with the `monad` profile (implies `--network monad`), as the LensCreate2 addresses depend on the
+ * compiler settings.
+ *
  * Local Monad node:
  *   anvil --network monad --auto-impersonate
- *   forge script script/DeployMonad.s.sol --network monad --rpc-url http://127.0.0.1:8545 \
+ *   FOUNDRY_PROFILE=monad forge script script/DeployMonad.s.sol --rpc-url http://127.0.0.1:8545 \
  *     --unlocked --sender 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 --broadcast
  *
  * Monad testnet (10143) / mainnet (143), see MONAD.md for the required env vars and the LensCreate2 deployer:
- *   forge script script/DeployMonad.s.sol --network monad --rpc-url monad_testnet \
+ *   FOUNDRY_PROFILE=monad forge script script/DeployMonad.s.sol --rpc-url monad_testnet \
  *     --account <deployer> --account <lensCreate2Deployer> --sender <deployerAddress> --broadcast --slow
  */
 contract DeployMonad is Script {
