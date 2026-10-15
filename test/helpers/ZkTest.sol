@@ -20,6 +20,9 @@ contract ZkTest is Test {
 
     // Only Monad (e.g. `forge test --network monad`) has the MIP-4 reserve balance precompile, which must be CALLed.
     function isMonad() public returns (bool) {
+        if (isZkEvm()) {
+            return false; // Addresses below 2^16 are reserved for system contracts on ZKsync
+        }
         (bool callSucceeded, bytes memory returnData) =
             address(0x1001).call{gas: 10_000}(abi.encodeWithSignature("dippedIntoReserve()"));
         return callSucceeded && returnData.length == 32;

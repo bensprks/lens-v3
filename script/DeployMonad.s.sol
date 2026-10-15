@@ -204,7 +204,8 @@ contract DeployMonad is Script {
         address lensCreate2Impl = address(new LensCreate2());
         // On Monad, accounts funded from a zero balance must wait k blocks before sending, so fund it beforehand there.
         if (block.chainid == LOCAL_CHAIN_ID && LENS_CREATE_2_EVM_DEPLOYER.balance == 0) {
-            payable(LENS_CREATE_2_EVM_DEPLOYER).transfer(1 ether);
+            (bool funded,) = LENS_CREATE_2_EVM_DEPLOYER.call{value: 1 ether}("");
+            require(funded, "Could not fund LENS_CREATE_2_EVM_DEPLOYER");
         }
         vm.stopBroadcast();
 
